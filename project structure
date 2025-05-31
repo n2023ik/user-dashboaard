@@ -1,0 +1,5 @@
+user-app/
+├── public/
+│   ├── add-user.html
+│   └── dashboard.html
+├── server.js

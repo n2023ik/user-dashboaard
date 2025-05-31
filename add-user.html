@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add User</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
+    <h1 class="text-2xl font-bold text-center text-blue-700 mb-6">Add User</h1>
+    
+    <form id="userForm" autocomplete="off">
+      <!-- Step 1 -->
+      <div class="step active space-y-4" id="step1">
+        <input id="name" placeholder="Name" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <input id="email" placeholder="Email" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <span class="error text-red-600 text-sm" id="err1"></span>
+        <div class="flex justify-end">
+          <button type="button" class="btn bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700" onclick="nextStep(1)">Next</button>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step hidden space-y-4" id="step2">
+        <input id="street" placeholder="Street" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <input id="city" placeholder="City" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <input id="zip" placeholder="Zip" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <span class="error text-red-600 text-sm" id="err2"></span>
+        <div class="flex justify-between">
+          <button type="button" class="btn bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600" onclick="prevStep(2)">Back</button>
+          <button type="button" class="btn bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700" onclick="nextStep(2)">Next</button>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step hidden" id="step3">
+        <div id="review" class="text-gray-700 text-sm space-y-2 mb-4"></div>
+        <div class="flex justify-between">
+          <button type="button" class="btn bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600" onclick="prevStep(3)">Back</button>
+          <button type="submit" class="btn bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">Submit</button>
+        </div>
+      </div>
+    </form>
+
+    <div class="mt-6 text-center">
+      <a href="dashboard.html">
+        <button class="btn bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">Back to Dashboard</button>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    let step = 1;
+    function showStep(n) {
+      document.querySelectorAll('.step').forEach((el, i) => {
+        el.classList.toggle('hidden', i !== n - 1);
+        el.classList.toggle('active', i === n - 1);
+      });
+    }
+
+    function nextStep(n) {
+      if (n === 1) {
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        if (!name || !email || !/\S+@\S+\.\S+/.test(email)) {
+          document.getElementById('err1').textContent = 'Enter a valid name and email.';
+          return;
+        }
+        document.getElementById('err1').textContent = '';
+      }
+
+      if (n === 2) {
+        const street = document.getElementById('street').value.trim();
+        const city = document.getElementById('city').value.trim();
+        const zip = document.getElementById('zip').value.trim();
+        if (!street || !city || !zip) {
+          document.getElementById('err2').textContent = 'All address fields are required.';
+          return;
+        }
+        document.getElementById('err2').textContent = '';
+        document.getElementById('review').innerHTML = `
+          <p><strong>Name:</strong> ${document.getElementById('name').value}</p>
+          <p><strong>Email:</strong> ${document.getElementById('email').value}</p>
+          <p><strong>Street:</strong> ${street}</p>
+          <p><strong>City:</strong> ${city}</p>
+          <p><strong>Zip:</strong> ${zip}</p>
+        `;
+      }
+
+      step = n + 1;
+      showStep(step);
+    }
+
+    function prevStep(n) {
+      step = n - 1;
+      showStep(step);
+    }
+
+    document.getElementById('userForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const userData = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        street: document.getElementById('street').value,
+        city: document.getElementById('city').value,
+        zip: document.getElementById('zip').value,
+      };
+
+      try {
+        const res = await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(userData),
+        });
+
+        if (!res.ok) throw new Error('Failed to save user');
+
+        alert('User added successfully!');
+        window.location.href = 'dashboard.html';
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    };
+  </script>
+</body>
+</html>
